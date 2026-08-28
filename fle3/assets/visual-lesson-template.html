@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FLE3_TITLE</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #152033;
+      --muted: #5d687a;
+      --paper: #f8f9fb;
+      --surface: #ffffff;
+      --line: #d8dde7;
+      --primary: #5b4bdb;
+      --primary-soft: #e9e5ff;
+      --secondary: #ee7a46;
+      --secondary-soft: #ffe8dc;
+      --good: #147d64;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.4fr);
+      align-items: center;
+      gap: clamp(28px, 6vw, 72px);
+      min-height: min(680px, 86vh);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.6rem, 7vw, 5.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+      overflow-wrap: anywhere;
+    }
+
+    .lede {
+      max-width: 34rem;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+    }
+
+    .visual-stage {
+      min-height: 520px;
+      margin: 0;
+      padding: clamp(18px, 3vw, 34px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+    }
+
+    svg { width: 100%; height: 100%; min-height: 450px; }
+    .mobile-diagram { display: none; }
+    .node { fill: #fff; stroke: var(--line); stroke-width: 2; }
+    .node-primary { fill: var(--primary-soft); stroke: var(--primary); }
+    .node-secondary { fill: var(--secondary-soft); stroke: var(--secondary); }
+    .arrow { fill: none; stroke: var(--primary); stroke-width: 4; stroke-linecap: round; }
+    .svg-title { fill: var(--ink); font-size: 22px; font-weight: 800; }
+    .svg-copy { fill: var(--muted); font-size: 16px; font-weight: 650; }
+    .svg-action { fill: var(--primary); font-size: 14px; font-weight: 800; }
+
+    .lesson {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 40px;
+      margin-top: 48px;
+      border-top: 1px solid var(--line);
+    }
+
+    section {
+      padding: 36px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section h2 {
+      margin: 0 0 14px;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+    }
+
+    section p { margin: 0; color: var(--muted); }
+    .wide { grid-column: 1 / -1; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .steps li {
+      position: relative;
+      min-height: 150px;
+      padding: 58px 22px 24px;
+      border-top: 3px solid var(--primary);
+      color: var(--muted);
+      counter-increment: step;
+    }
+
+    .steps li::before {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--primary);
+      content: counter(step);
+      font-weight: 850;
+    }
+
+    .boundary { border-top: 3px solid var(--secondary); }
+    .recap { border-top: 3px solid var(--good); }
+    strong { color: var(--ink); }
+
+    @media (max-width: 780px) {
+      main { width: min(calc(100% - 20px), 680px); padding-top: 24px; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .visual-stage { min-height: 410px; border-radius: 12px; }
+      .desktop-diagram { display: none; }
+      .mobile-diagram { display: block; min-height: 540px; }
+      .lesson { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      .steps { grid-template-columns: 1fr; }
+      h1 { font-size: clamp(2.35rem, 11vw, 4rem); line-height: 1.04; word-break: keep-all; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="hero">
+      <header>
+        <h1>FLE3_TITLE</h1>
+        <p class="lede">FLE3_ONE_LINE_ANSWER</p>
+      </header>
+
+      <figure class="visual-stage" aria-labelledby="diagram-caption">
+        <svg class="desktop-diagram" viewBox="0 0 760 520" role="img" aria-labelledby="diagram-title diagram-desc">
+          <title id="diagram-title">FLE3_DIAGRAM_TITLE</title>
+          <desc id="diagram-desc">FLE3_DIAGRAM_DESCRIPTION</desc>
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5b4bdb"/>
+            </marker>
+          </defs>
+
+          <path class="arrow" d="M235 260 H325" marker-end="url(#arrowhead)"/>
+          <path class="arrow" d="M530 260 H620" marker-end="url(#arrowhead)"/>
+          <text class="svg-action" x="280" y="240" text-anchor="middle">FLE3_ACTION_ONE</text>
+          <text class="svg-action" x="575" y="240" text-anchor="middle">FLE3_ACTION_TWO</text>
+
+          <rect class="node" x="35" y="180" width="200" height="160" rx="28"/>
+          <text class="svg-title" x="135" y="245" text-anchor="middle">FLE3_NODE_ONE</text>
+          <text class="svg-copy" x="135" y="278" text-anchor="middle">FLE3_NODE_ONE_DETAIL</text>
+
+          <rect class="node node-primary" x="325" y="160" width="205" height="200" rx="32"/>
+          <text class="svg-title" x="427" y="245" text-anchor="middle">FLE3_NODE_TWO</text>
+          <text class="svg-copy" x="427" y="278" text-anchor="middle">FLE3_NODE_TWO_DETAIL</text>
+
+          <rect class="node node-secondary" x="620" y="180" width="105" height="160" rx="28"/>
+          <text class="svg-title" x="672" y="245" text-anchor="middle">FLE3_NODE_THREE</text>
+          <text class="svg-copy" x="672" y="278" text-anchor="middle">FLE3_RESULT</text>
+        </svg>
+
+        <svg class="mobile-diagram" viewBox="0 0 360 620" role="img" aria-labelledby="mobile-diagram-title mobile-diagram-desc">
+          <title id="mobile-diagram-title">FLE3_DIAGRAM_TITLE</title>
+          <desc id="mobile-diagram-desc">FLE3_DIAGRAM_DESCRIPTION</desc>
+          <defs>
+            <marker id="mobile-arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5b4bdb"/>
+            </marker>
+          </defs>
+
+          <rect class="node" x="55" y="25" width="250" height="135" rx="26"/>
+          <text class="svg-title" x="180" y="83" text-anchor="middle">FLE3_NODE_ONE</text>
+          <text class="svg-copy" x="180" y="116" text-anchor="middle">FLE3_NODE_ONE_DETAIL</text>
+
+          <path class="arrow" d="M180 160 V220" marker-end="url(#mobile-arrowhead)"/>
+          <text class="svg-action" x="198" y="196">FLE3_ACTION_ONE</text>
+
+          <rect class="node node-primary" x="45" y="225" width="270" height="155" rx="30"/>
+          <text class="svg-title" x="180" y="293" text-anchor="middle">FLE3_NODE_TWO</text>
+          <text class="svg-copy" x="180" y="328" text-anchor="middle">FLE3_NODE_TWO_DETAIL</text>
+
+          <path class="arrow" d="M180 380 V440" marker-end="url(#mobile-arrowhead)"/>
+          <text class="svg-action" x="198" y="416">FLE3_ACTION_TWO</text>
+
+          <rect class="node node-secondary" x="55" y="445" width="250" height="135" rx="26"/>
+          <text class="svg-title" x="180" y="503" text-anchor="middle">FLE3_NODE_THREE</text>
+          <text class="svg-copy" x="180" y="536" text-anchor="middle">FLE3_RESULT</text>
+        </svg>
+        <figcaption id="diagram-caption" hidden>FLE3_DIAGRAM_DESCRIPTION</figcaption>
+      </figure>
+    </div>
+
+    <div class="lesson">
+      <section>
+        <h2>비유</h2>
+        <p>FLE3_ANALOGY</p>
+      </section>
+
+      <section class="boundary">
+        <h2>비유가 다른 지점</h2>
+        <p>FLE3_BOUNDARY</p>
+      </section>
+
+      <section class="wide">
+        <h2>실제 원리: 세 단계</h2>
+        <ol class="steps">
+          <li><strong>FLE3_STEP_ONE_TITLE</strong><br>FLE3_STEP_ONE</li>
+          <li><strong>FLE3_STEP_TWO_TITLE</strong><br>FLE3_STEP_TWO</li>
+          <li><strong>FLE3_STEP_THREE_TITLE</strong><br>FLE3_STEP_THREE</li>
+        </ol>
+      </section>
+
+      <section class="wide recap">
+        <h2>한 줄 정리</h2>
+        <p>FLE3_RECAP</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

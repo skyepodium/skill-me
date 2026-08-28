@@ -1,0 +1,7 @@
+interface:
+  display_name: "FLE³"
+  short_description: "리더 검수 후 큰 HTML 그림으로 쉽게 설명합니다"
+  default_prompt: "Use $fle3 to create a fast, clear HTML visual lesson with a proportional anonymous leader check, one large explanatory diagram, minimal decoration, and plain speech matching the user's register."
+
+policy:
+  allow_implicit_invocation: true
