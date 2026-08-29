@@ -1,11 +1,25 @@
 ---
 name: ios-app-store-copy
-description: Create and validate multilingual, copy-ready App Store Connect listing text for an iOS launch, app update, or locale expansion. Use for app names, subtitles, promotional text, descriptions, keywords, review notes, shared submission values, and localized What's New copy. Do not use for building, signing, uploading, or submitting an app.
+description: >-
+  Create and validate copy-ready App Store Connect text for an iOS release,
+  update, or locale expansion. Use when users naturally ask for iOS 배포에
+  필요한 문구, 앱스토어 출시 문구, app names, subtitles, descriptions,
+  keywords, promotional text, review notes, What's New or 업데이트 노트, or
+  multilingual store copy. Do not use for requests limited to building,
+  signing, TestFlight, uploading, submission, or release automation.
 ---
 
 # iOS App Store Copy
 
 Produce one Markdown artifact that a person can copy into App Store Connect without mixing in research notes or an investigation diary.
+
+## Understand natural requests
+
+Treat ordinary requests such as `iOS 배포할 건데 필요한 문구 써줘`, `앱스토어 출시 문구 만들어줘`, `이번 버전 업데이트 노트 써줘`, or `스토어 문구를 영어와 일본어로도 만들어줘` as valid entry points. The user does not need to name the skill or know App Store Connect field names.
+
+Copy intent must be present. Do not activate for a request that only asks to build, sign, upload, submit, use TestFlight, or automate a release. If one request contains both release operations and store copy, handle only the copy unless the user separately authorizes the other operation.
+
+For a generic release-copy request, inspect repository evidence and existing store artifacts before choosing a mode. Use `launch` for a verified first listing, `update` for a verified later version, and `add-locales` for an explicit locale expansion. If the evidence cannot distinguish first launch from update, ask one concise question because the required fields differ materially.
 
 ## Choose the mode
 

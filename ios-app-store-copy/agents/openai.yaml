@@ -1,4 +1,6 @@
 interface:
   display_name: "iOS App Store Copy"
-  short_description: "다국어 App Store Connect 입력 문구를 생성하고 검증합니다"
-  default_prompt: "Use $ios-app-store-copy to create validated multilingual App Store Connect copy for this iOS app."
+  short_description: "iOS 배포에 필요한 앱스토어 문구를 작성하고 검증합니다"
+  default_prompt: "Use $ios-app-store-copy to inspect this iOS app and write the App Store Connect copy needed for its release."
+policy:
+  allow_implicit_invocation: true
