@@ -1,0 +1,6 @@
+interface:
+  display_name: "Game UI Design Lead"
+  short_description: "게임 세계와 플레이 우선순위에서 고유한 UI 방향을 설계합니다"
+  default_prompt: "$game-ui-design을 사용해 이 게임 화면을 분석하고 상용 게임 수준의 명확하고 고유한 UI로 개선해줘."
+policy:
+  allow_implicit_invocation: true
