@@ -7,6 +7,17 @@ and platform.
 Use `pass`, `revise`, or `blocked` for each gate and cite visible evidence. `Blocked` means the
 necessary game or platform fact is unavailable; it does not mean the design is merely imperfect.
 
+## 0. Implementation readiness
+
+- A Design Basis exists for the exact screen, state, resolution, platform, input, and locale.
+- Strong visual decisions have game or gameplay provenance and an explicit rejection test.
+- Typography, spacing, major footprints, crop behavior, and art integration are measurable.
+- Required fonts and identity-bearing assets are marked available, missing, or provisional.
+- Reference analysis describes hierarchy and relationships, not only colors or motifs.
+
+Do not review a missing Design Basis by reconstructing one after the fact. Mark the direction
+`revise` or `blocked`; post-hoc rationale is not evidence that implementation was led by it.
+
 ## 1. Gameplay truth
 
 - Can the screen's job and primary player verb be stated without aesthetic language?
@@ -24,6 +35,11 @@ Revise if the hierarchy was derived from a component inventory rather than playe
 - Is dense content grouped into recognizable routes instead of a uniform wall?
 - Is sparse space serving focus, anticipation, or atmosphere rather than hiding missing content?
 - Do transient alerts have a destination and expiry instead of accumulating permanently?
+- Is each semantic zone expressed with the lightest suitable structure rather than automatically
+  becoming a large panel?
+- Does every major container's footprint follow content, interaction, state expansion, or a stated
+  compositional purpose?
+- Would the layout still make sense if the safe-area guides and four screen corners were hidden?
 
 For touch interfaces, inspect reach, hand occlusion, accidental activation risk, and whether
 actions and observations are sensibly separated. For controller interfaces, inspect initial
@@ -44,6 +60,10 @@ focus, focus order, focus visibility, and recovery after a modal closes.
 Revise if the screen is described as clean or polished without measurable type and spacing
 tokens or a render at the target resolution.
 
+Treat system-font stacks, placeholder glyphs, and weight-only hierarchy as provisional unless
+the Design Basis deliberately justifies them and the rendered result proves their fit. Passing
+legibility does not by itself pass typography or identity.
+
 ## 4. Distinctiveness
 
 Run these tests without treating any single one as a universal veto:
@@ -56,6 +76,8 @@ Run these tests without treating any single one as a universal veto:
 - **Genre-default audit:** neon, parchment, glass, bevels, rounded cards, tactical grids, and
   ornamental numbers appear only when justified.
 - **Signature budget:** one memorable device leads; secondary elements support it.
+- **Asset truth:** identity comes from appropriate fonts, icons, portraits, faction marks,
+  materials, or motion rather than generic frames compensating for their absence.
 
 Revise generic choices instead of adding more decoration on top of them.
 
@@ -102,6 +124,14 @@ For redesigns, compare before and after at the same resolution and representativ
 changes that improve decoration while leaving type hierarchy, alignment axes, or art integration
 unchanged.
 
+If no fresh rendered result was inspected, mark visual acceptance `blocked`. Code inspection can
+verify tokens and state wiring, but it cannot verify hierarchy, compositing, apparent type size,
+or integration with the game art.
+
+The final report must name the render artifact, capture command or method, resolution, and state
+inspected. Use the state named in the Design Basis or the highest-risk state; do not substitute a
+clean hero state that avoids localization, overload, missing assets, or hostile backgrounds.
+
 ## 8. Final anti-slop challenge
 
 Ask:
@@ -114,3 +144,16 @@ Ask:
 
 If the answer reveals that key choices are interchangeable with another game, return to the
 world-derived visual grammar. Finish by listing the concrete revisions the review produced.
+
+## Acceptance ownership
+
+For polished, commercial-quality, final, or complete visual claims, use a fresh reviewer when one
+is available. Give that reviewer the brief, references, baseline, and rendered result without the
+builder's rationale; the reviewer judges visible evidence and player consequences. If independent
+review is unavailable, state that fact and conduct a separate artifact-only pass that explicitly
+disregards the original rationale.
+
+The following gates are individually blocking for a visually complete claim: world provenance,
+typography, art integration, generic substitution, container footprint, and target-resolution
+rendering. Do not average them into a passing score because behavior, safe areas, or touch targets
+passed. A failed blocking gate requires revision and another render.

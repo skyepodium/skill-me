@@ -30,6 +30,25 @@ Use no more roles than the screen needs. A five-role scale applied consistently 
 polished than many one-off sizes. Create contrast with role, weight, width, value, and placement;
 do not solve every hierarchy problem by making the text larger.
 
+## Font readiness and finality
+
+Name the actual font files or project assets used for each role. A platform default, engine
+`SystemFont`, browser sans-serif, or broad fallback stack is acceptable while proving behavior,
+but it is provisional visual work unless the Design Basis deliberately selects it for this game.
+Changing only weight between headings and body text rarely creates an authored type system.
+
+Before treating typography as final:
+
+- verify that the intended font is licensed and available in the project or approved pipeline;
+- render real strings in every shipping locale, including numerals and punctuation;
+- compare width, x-height or CJK apparent body, stroke density, and baseline compatibility across
+  fallbacks;
+- define a distinct but restrained relationship among display, reading, utility, and numeric roles;
+- inspect the type over the actual hostile backgrounds at 100% target scale.
+
+Do not compensate for a missing font with extra outlines, faux bold, arbitrary tracking, cut
+panels, or ornamental labels. Mark the screen provisional and surface the dependency.
+
 ## CJK and numeric handling
 
 - Test the actual Korean, Japanese, or Chinese strings. CJK glyphs often need more apparent size
@@ -97,6 +116,11 @@ For portrait cards and collection grids:
 - keep names, levels, rarity, and faction marks on shared baselines;
 - use faction or rarity color in controlled semantic areas rather than tinting every surface;
 - dim or simplify the background enough that the grid owns the reading plane.
+
+For HUD panels, size the backing from the rendered content and required interaction area. A fixed
+minimum width copied across unrelated widgets often creates the AI-template look: sparse text
+floating inside oversized rectangles. Inspect the panel with real localized content, then reserve
+only the expansion space supported by an actual state or content case.
 
 ## Surface and component finish
 

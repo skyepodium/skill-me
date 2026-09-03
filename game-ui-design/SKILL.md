@@ -23,6 +23,34 @@ Default to decorating nothing. Every visible decision should be justified by at 
 gameplay priority, world language, input ergonomics, or state communication. A coherent dense
 interface can be better than a sparse one; minimalism is not the quality bar.
 
+## Non-negotiable execution contract
+
+For any redesign or implementation, separate **design readiness**, **building**, and **visual
+acceptance**. Engineering correctness, safe areas, responsive anchors, and touch-target compliance
+cannot compensate for a failed visual direction.
+
+Before editing UI code or final assets, write the compact Design Basis defined in
+[references/design-basis.md](references/design-basis.md). It must contain:
+
+- the screen job, attention windows, and ranked current defects;
+- structural reference observations rather than a list of motifs to copy;
+- a provenance table connecting every high-salience visual decision to game or gameplay evidence;
+- exact typography, spacing, and major footprint tokens at the target resolution;
+- a font and art-asset audit marking each dependency as available, missing, or provisional;
+- explicit rejection tests for choices that could belong to an unrelated game.
+
+If these items are absent, the work is not implementation-ready. If the user requires immediate
+implementation, use the smallest reversible provisional direction and label it provisional; do
+not silently promote assumptions, system fonts, placeholder icons, or generic decoration into a
+finished art direction.
+
+Do not call an implemented UI polished, final, commercial-quality, or complete until a fresh
+render at the target resolution and a representative state has been inspected against
+[references/review-gates.md](references/review-gates.md). For a redesign, compare the same state
+before and after. If rendering is unavailable, report the implementation as visually unverified.
+The representative state must be the state named in the Design Basis or the highest-risk state
+for hierarchy, localization, asset integration, or overload; do not select an easy hero state.
+
 ## Understand natural requests
 
 The user does not need to know this skill's name or use a slash command. Activate when game
@@ -103,6 +131,10 @@ Do not treat a new palette as a redesign. State the most consequential gaps, rev
 that produced them, and render the same representative state again so the before/after judgment
 is meaningful.
 
+Do not begin by preserving the current component silhouettes. First decide which containers,
+axes, overlays, and world-anchored elements should exist at all. A cleaner restyling of the same
+bad footprint is not a successful redesign.
+
 ## Lead workflow
 
 ### 1. Write the gameplay thesis
@@ -131,6 +163,12 @@ deliberately calls for a cut-in, reticle, prompt, or interruption.
 
 Use a small ASCII wireframe when spatial relationships are not obvious. It should name zones
 and attention flow, not imitate final decoration.
+
+A semantic zone is not automatically a panel. It may be a compact label, world-anchored marker,
+edge-aligned meter, contextual overlay, or grouped control cluster. Do not turn a zone map into
+one large floating box per corner. Size every container from its content, interaction target,
+expected state expansion, and compositional role. Large unused interiors require an explicit
+focus or atmosphere rationale; a default minimum size is not a rationale.
 
 ### 3. Choose density from the play loop
 
@@ -166,6 +204,11 @@ Before choosing font sizes, polishing an existing screen, or implementing a visu
 [references/typography-and-finish.md](references/typography-and-finish.md). Record actual token
 values; adjectives such as "large", "clean", or "premium" are not a specification.
 
+A platform or engine system-font fallback is acceptable for a functional prototype. It is not
+evidence of finished typography unless it was deliberately selected, tested with the real
+locales, and shown to support the game's identity. Do not disguise missing type direction with
+weight changes, outlines, tracking, or decorative panels.
+
 ### 5. Derive the visual grammar from the world
 
 Extract three to five concrete sources from the game's subject matter. Sources may include a
@@ -182,6 +225,11 @@ physical display, or magical rule. Translate them into a compact system:
 Spend boldness in one place. The signature may recur, but surrounding components should not
 compete with it. Genre shorthand such as "sci-fi neon" or "fantasy parchment" is not a source;
 name the in-world evidence that makes the choice specific.
+
+For every strong color, silhouette, material, ornament, or motion rule, record the evidence and
+the contradiction that would prove it wrong. A named palette or component family is not a
+design system merely because it is internally consistent. If the same system could plausibly be
+renamed for a different genre, reject it before implementation.
 
 ### 6. Design states before polish
 
@@ -214,13 +262,25 @@ Revise choices that are not traceable to the game. Before finalizing a design or
 implementation, read [references/review-gates.md](references/review-gates.md) and report the
 changes caused by the critique.
 
+Separate authorship from acceptance. When an independent reviewer or subagent is available and
+appropriate, give it the brief, references, baseline, and rendered result but not the builder's
+rationale, then require visible evidence for its verdict. Otherwise perform a distinct
+artifact-only review pass that deliberately ignores the design rationale. “It matches the plan”
+is not acceptance evidence; the plan itself may be generic.
+
 When implementation is requested, build from the revised direction and use the project's
 existing engine, components, tokens, and asset pipeline. Do not introduce a new UI framework or
 asset dependency solely for styling.
 
+Any `revise` result for world provenance, typography, art integration, generic substitution,
+container footprint, or target-resolution rendering blocks a visually complete claim. Revise
+and render again; do not average these failures against passed engineering checks.
+
 ## Anti-slop rules
 
 - Do not wrap every item in a card. A container must express grouping, hit area, depth, or state.
+- Do not confuse safe corner placement with composition. UI must follow attention flow, world
+  occupancy, character silhouettes, and action relationships rather than merely avoid overlap.
 - Do not give every component equal contrast, glow, motion, border weight, or visual novelty.
 - Do not use gradients, glass, rounded rectangles, bevels, diagonal cuts, noise, scanlines, or
   particles as automatic genre presets. They are allowed when the visual grammar justifies them.
@@ -235,6 +295,8 @@ asset dependency solely for styling.
   remaining composition and component language should still belong to this game.
 - Do not preserve decoration that cannot survive the question: "What player decision does this
   support, or what part of the world does it express?"
+- Do not use generic frames, rails, crests, tactical cuts, or premium accents to conceal missing
+  fonts, icons, portraits, faction marks, textures, or other identity-bearing assets.
 
 These are decision tests, not a ban on any aesthetic. A deliberately justified exception is
 better than a safe but generic result.
@@ -254,6 +316,9 @@ Scale the response to the task, but make design work decision-ready. Include the
 9. platform, input, aspect-ratio, localization, and accessibility constraints;
 10. anti-slop critique: what was rejected or revised and why;
 11. rendered or tested evidence when an implementation exists.
+
+For build work, also report which fonts and identity-bearing assets are final versus provisional,
+the review-gate verdicts, and any reason the result remains visually unverified.
 
 Avoid presenting a palette and a component list as a complete design. The essential output is a
 coherent chain from gameplay truth to visible decisions.
