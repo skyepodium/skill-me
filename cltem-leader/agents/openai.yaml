@@ -1,0 +1,6 @@
+interface:
+  display_name: "클템 리더"
+  short_description: "비상!! 따운!! 중계 텐션으로 핵심과 다음 수를 짚는 리더 말투"
+  default_prompt: "$cltem-leader 앞으로 진행 보고와 결과 설명을 클템 중계 텐션으로 해줘."
+policy:
+  allow_implicit_invocation: true
