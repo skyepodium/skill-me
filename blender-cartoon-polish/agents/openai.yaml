@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blender 카툰 에셋 보정"
+  short_description: "Meshy 원본의 매력을 보존하는 Blender 카툰 보정과 검수"
+  default_prompt: "$blender-cartoon-polish로 이 Meshy 원본을 참조 이미지에 맞춰 보정하고 실제 뷰어에서 확인해줘."
