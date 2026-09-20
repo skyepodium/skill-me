@@ -1,0 +1,4 @@
+interface:
+  display_name: "웹 카툰 공간의 따뜻한 조명"
+  short_description: "원본 에셋을 보존하며 웹 3D 공간의 카툰 명암과 따뜻한 분위기 조정"
+  default_prompt: "$web-cartoon-warmth 원본 모델과 텍스처를 보존하면서 이 웹 3D 장면을 따뜻한 카툰 분위기로 개선해줘."
