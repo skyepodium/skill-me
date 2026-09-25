@@ -1,52 +1,61 @@
-# Stylized cloud-layer skybox shader (Unity built-in pipeline reference)
+# Stylized cloud-layer skybox shader (Unity URP reference)
 
-Complete skybox shader: horizon→zenith gradient, **cloud plane** projection, Perlin-Worley erosion, two-tone toon shading from a second sample toward the sun, wind, horizon fade and haze. Property defaults are the values tuned in the QB-001 Game view (see [tuning.md](tuning.md)).
+Complete URP skybox shader (HLSL). It draws a horizon→zenith gradient and a cloud layer: the **cloud plane** projection, a low-frequency **cluster mask** that varies coverage by region, Perlin-Worley erosion, two-tone toon shading from a second sample toward the sun, wind, horizon fade and haze. Property defaults are the values tuned against the Arceus-style reference in the QB-001 Game view (see [tuning.md](tuning.md)).
 
-Assign via `RenderSettings.skybox` (camera clear flags = Skybox). `_WorldSpaceLightPos0` in a skybox pass is the sun direction (the `RenderSettings.sun` or brightest directional light); the shader falls back to a fixed direction when the sun is overhead.
+Assign via `RenderSettings.skybox` (camera clear flags = Skybox). In URP the sun direction is `_MainLightPosition` (direction toward the main light), set per camera before the skybox draws. The shader falls back to a fixed direction when the sun is overhead.
 
 ```hlsl
 Shader "Sky/StylizedCloudLayer"
 {
     Properties
     {
-        _HorizonColor ("Horizon", Color) = (0.72, 0.85, 0.90, 1)
-        _ZenithColor ("Zenith", Color) = (0.20, 0.56, 0.83, 1)
-        _CloudLitColor ("Cloud Lit", Color) = (1, 0.99, 0.94, 1)
-        _CloudShadeColor ("Cloud Shade", Color) = (0.78, 0.84, 0.93, 1)
+        _HorizonColor ("Horizon", Color) = (0.58, 0.84, 0.89, 1)
+        _ZenithColor ("Zenith", Color) = (0.16, 0.54, 0.84, 1)
+        _GradientHeight ("Gradient Height (dir.y where zenith colour is reached)", Range(0.05, 1)) = 0.42
+        _CloudLitColor ("Cloud Lit", Color) = (1, 1, 0.98, 1)
+        _CloudShadeColor ("Cloud Shade", Color) = (0.87, 0.92, 0.99, 1)
         _CloudOpacity ("Cloud Opacity", Range(0, 1)) = 0.95
         [NoScaleOffset] _CloudNoise ("Cloud Noise (R shape, G detail)", 2D) = "black" {}
-        _CloudCoverage ("Cloud Coverage", Range(0, 1)) = 0.44
+        _CloudCoverage ("Cloud Coverage", Range(0, 1)) = 0.49
+        _ClusterScale ("Cluster Scale (relative to plane)", Float) = 0.18
+        _CoverageVariation ("Coverage Variation", Range(0, 0.5)) = 0.25
         _CloudEdgeSoftness ("Cloud Edge Softness", Range(0.001, 0.2)) = 0.02
-        _CloudPlaneScale ("Cloud Plane Scale (tiles per unit)", Float) = 0.15
-        _CloudHorizonBias ("Cloud Horizon Bias", Range(0.01, 0.5)) = 0.1
+        _CloudPlaneScale ("Cloud Plane Scale (tiles per unit)", Float) = 0.36
+        _CloudHorizonBias ("Cloud Horizon Bias", Range(0.01, 0.5)) = 0.3
         _DetailTiling ("Detail Tiling", Float) = 2.7
-        _DetailErosion ("Detail Erosion", Range(0, 1)) = 0.26
+        _DetailErosion ("Detail Erosion", Range(0, 1)) = 0.3
         _WindVelocity ("Wind Velocity (tiles per second, xy)", Vector) = (0.004, 0.0015, 0, 0)
         _DetailWindMultiplier ("Detail Wind Multiplier", Float) = 1.6
         _ShadeOffset ("Shade Offset Toward Sun (tiles)", Float) = 0.025
-        _ShadeThreshold ("Shade Density Above Edge", Range(0, 0.5)) = 0.1
+        _ShadeThreshold ("Shade Density Above Edge", Range(0, 0.5)) = 0.22
         _HorizonFadeHeight ("Horizon Fade Height", Range(0.001, 0.2)) = 0.025
-        _HorizonHaze ("Horizon Haze", Range(0, 1)) = 0.45
+        _HorizonHaze ("Horizon Haze", Range(0, 1)) = 0.3
         _HorizonHazeHeight ("Horizon Haze Height", Range(0.01, 1)) = 0.22
     }
     SubShader
     {
-        Tags { "Queue" = "Background" "RenderType" = "Background" "PreviewType" = "Skybox" }
+        Tags { "RenderPipeline" = "UniversalPipeline" "Queue" = "Background" "RenderType" = "Background" "PreviewType" = "Skybox" }
         Cull Off ZWrite Off
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
-            #include "UnityCG.cginc"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            fixed4 _HorizonColor;
-            fixed4 _ZenithColor;
-            fixed4 _CloudLitColor;
-            fixed4 _CloudShadeColor;
+            TEXTURE2D(_CloudNoise);
+            SAMPLER(sampler_CloudNoise);
+
+            CBUFFER_START(UnityPerMaterial)
+            half4 _HorizonColor;
+            half4 _ZenithColor;
+            float _GradientHeight;
+            half4 _CloudLitColor;
+            half4 _CloudShadeColor;
             float _CloudOpacity;
-            sampler2D _CloudNoise;
             float _CloudCoverage;
+            float _ClusterScale;
+            float _CoverageVariation;
             float _CloudEdgeSoftness;
             float _CloudPlaneScale;
             float _CloudHorizonBias;
@@ -59,8 +68,11 @@ Shader "Sky/StylizedCloudLayer"
             float _HorizonFadeHeight;
             float _HorizonHaze;
             float _HorizonHazeHeight;
+            CBUFFER_END
 
             static const float2 FallbackSunPlaneDirection = float2(0.7071, 0.7071);
+            // Decorrelates the cluster mask from the shape sample that reads the same channel.
+            static const float2 ClusterSampleOffset = float2(0.37, 0.61);
 
             struct Input { float4 vertex : POSITION; };
             struct Interpolators { float4 position : SV_POSITION; float3 direction : TEXCOORD0; };
@@ -68,7 +80,7 @@ Shader "Sky/StylizedCloudLayer"
             Interpolators Vert(Input input)
             {
                 Interpolators output;
-                output.position = UnityObjectToClipPos(input.vertex);
+                output.position = TransformObjectToHClip(input.vertex.xyz);
                 output.direction = input.vertex.xyz;
                 return output;
             }
@@ -82,29 +94,34 @@ Shader "Sky/StylizedCloudLayer"
 
             float CloudDensity(float2 planePoint, float2 wind)
             {
-                float shape = tex2D(_CloudNoise, planePoint + wind).r;
-                float detail = tex2D(_CloudNoise, planePoint * _DetailTiling + wind * _DetailWindMultiplier).g;
+                float shape = SAMPLE_TEXTURE2D(_CloudNoise, sampler_CloudNoise, planePoint + wind).r;
+                float detail = SAMPLE_TEXTURE2D(_CloudNoise, sampler_CloudNoise, planePoint * _DetailTiling + wind * _DetailWindMultiplier).g;
                 return shape - (1.0 - detail) * _DetailErosion;
             }
 
             float2 SunPlaneDirection()
             {
-                float2 sunHorizontal = _WorldSpaceLightPos0.xz;
+                // URP publishes the main directional light as a direction toward the light.
+                float2 sunHorizontal = _MainLightPosition.xz;
                 float lengthSquared = dot(sunHorizontal, sunHorizontal);
                 if (lengthSquared < 1e-4) return FallbackSunPlaneDirection;
                 return sunHorizontal * rsqrt(lengthSquared);
             }
 
-            fixed4 Frag(Interpolators input) : SV_Target
+            half4 Frag(Interpolators input) : SV_Target
             {
                 float3 direction = normalize(input.direction);
-                float horizonBlend = smoothstep(-0.08, 0.85, direction.y);
-                fixed3 sky = lerp(_HorizonColor.rgb, _ZenithColor.rgb, horizonBlend);
-                if (direction.y <= 0.0) return fixed4(sky, 1);
+                float horizonBlend = smoothstep(0.0, _GradientHeight, direction.y);
+                half3 sky = lerp(_HorizonColor.rgb, _ZenithColor.rgb, horizonBlend);
+                if (direction.y <= 0.0) return half4(sky, 1);
 
                 float2 planePoint = CloudPlanePoint(direction);
                 float2 wind = _WindVelocity.xy * _Time.y;
-                float edge = 1.0 - _CloudCoverage;
+                // A low-frequency mask groups clouds into large masses separated by open blue sky.
+                float cluster = SAMPLE_TEXTURE2D(_CloudNoise, sampler_CloudNoise,
+                    planePoint * _ClusterScale + ClusterSampleOffset + wind * _ClusterScale).r;
+                float localCoverage = _CloudCoverage + (cluster - 0.5) * 2.0 * _CoverageVariation;
+                float edge = 1.0 - localCoverage;
                 float density = CloudDensity(planePoint, wind);
                 float body = smoothstep(edge, edge + _CloudEdgeSoftness, density);
 
@@ -112,13 +129,13 @@ Shader "Sky/StylizedCloudLayer"
                 float densityTowardSun = CloudDensity(planePoint + SunPlaneDirection() * _ShadeOffset, wind);
                 float coreThreshold = edge + _ShadeThreshold;
                 float shade = smoothstep(coreThreshold, coreThreshold + _CloudEdgeSoftness, densityTowardSun);
-                fixed3 cloud = lerp(_CloudLitColor.rgb, _CloudShadeColor.rgb, shade);
+                half3 cloud = lerp(_CloudLitColor.rgb, _CloudShadeColor.rgb, shade);
                 cloud = lerp(cloud, _HorizonColor.rgb, (1.0 - smoothstep(0.0, _HorizonHazeHeight, direction.y)) * _HorizonHaze);
 
                 float cloudAlpha = body * _CloudOpacity * smoothstep(0.0, _HorizonFadeHeight, direction.y);
-                return fixed4(lerp(sky, cloud, cloudAlpha), 1);
+                return half4(lerp(sky, cloud, cloudAlpha), 1);
             }
-            ENDCG
+            ENDHLSL
         }
     }
     Fallback Off
@@ -127,7 +144,17 @@ Shader "Sky/StylizedCloudLayer"
 
 ## Porting notes
 
-- **URP/HDRP:** keep `CloudPlanePoint`, `CloudDensity` and the shading block; replace `UnityCG.cginc`/`CGPROGRAM` with the pipeline's HLSL includes and read the main light direction from the pipeline's light API. HDRP normally uses its own sky system; implement it as a custom sky renderer or a Shader Graph fullscreen/sky material.
-- **Godot/Unreal/WebGL:** the fragment logic is engine-neutral: normalize the view ray, `ray.xz / (ray.y + bias) * scale`, two texture reads for density, one extra density evaluation offset toward the sun.
-- **Why the plane, not lat/long:** a lat/long mapping (`atan2` longitude) seams at ±180°, pinches at the zenith and draws horizon clouds as large as overhead ones. Plane projection shrinks and crowds distant clouds toward the horizon, so any view that shows sky shows clouds.
-- `_CloudHorizonBias` bounds the stretch at the horizon (the plane coordinate → ∞ as `dir.y → 0`); mipmapping on the noise hides the resulting minification.
+- **Built-in pipeline:** replace `HLSLPROGRAM`/`Core.hlsl` with `CGPROGRAM` and `#include "UnityCG.cginc"`. Use `UnityObjectToClipPos`, `sampler2D` with `tex2D`, and `_WorldSpaceLightPos0.xz` for the sun. Drop the `CBUFFER` block and the `RenderPipeline` tag.
+- **HDRP:** HDRP uses its own sky system. Port the fragment logic into a custom sky renderer or a Shader Graph sky material.
+- **Godot/Unreal/WebGL:** the fragment logic is engine-neutral:
+  - normalize the view ray and compute `ray.xz / (ray.y + bias) * scale`;
+  - read the texture three times (shape, detail, cluster mask);
+  - evaluate density once more with an offset toward the sun.
+- **Why the plane and not lat/long:** a lat/long mapping (`atan2` longitude) has three problems:
+  - it seams at ±180°;
+  - it pinches at the zenith;
+  - it draws horizon clouds as large as overhead ones.
+
+  Plane projection shrinks distant clouds and crowds them toward the horizon, so any view that shows sky shows clouds.
+- **Horizon stretch:** `_CloudHorizonBias` bounds how far the plane coordinate stretches near the horizon. Low values (0.1) squash horizon clouds into flat streaks. Values around 0.3 keep them round, closer to a painted sky dome. Mipmaps on the noise texture hide the minification.
+- **Gradient reach:** `_GradientHeight` is the `dir.y` at which the zenith colour takes over. It must fall inside the camera's visible sky band. A chase camera that sees only 0–20° shows nothing but the pale horizon colour when this value is 0.8 or more.

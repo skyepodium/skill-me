@@ -15,13 +15,19 @@ A sky is judged from the player's camera, not from the shader source or a previe
 
 **Done when:** you have a table of pitch → screen-top elevation and sky share. Every view that shows sky either shows sky content or is flagged as a hole. If the user sent a screenshot, it is reproduced by the numbers.
 
-## 2. Choose the sky technique
+## 2. Match the reference, if there is one
+
+Measure the user's reference image and a capture of the current default view with [scripts/sky_palette_compare.py](scripts/sky_palette_compare.py). Compare sky share of the frame, sky saturation, cloud cover and cloud brightness. The sky share is set by the camera, not the sky shader: if it differs, fix the camera pitch first and re-run step 1. The sky's colour gradient must reach its zenith colour inside the visible band; otherwise the player only ever sees the pale horizon colour ([observed-case.md](references/observed-case.md), case 2).
+
+**Done when:** a before/after table against the reference exists, and every gap is assigned to camera, gradient/palette or cloud layer.
+
+## 3. Choose the sky technique
 
 Use [skybox-options.md](references/skybox-options.md). Choose with the visible band, the need for runtime change (wind, time of day), the art direction and the GPU budget. A chase or ground camera that sees 0–30° almost always wants a gradient plus a cloud layer projected on a plane. Choose volumetric only when the camera looks up or flies through clouds.
 
 **Done when:** the choice and the rejected alternatives are each stated with the reason from the band, motion, art or cost.
 
-## 3. Build and integrate
+## 4. Build and integrate
 
 - Keep the sky base (gradient, horizon colour) in one shader or material. The horizon colour, fog colour and camera background must match.
 - Put the dense sky content where the visible band is. For chase cameras that means the 0–15° elevations near the horizon.
@@ -30,7 +36,7 @@ Use [skybox-options.md](references/skybox-options.md). Choose with the visible b
 
 **Done when:** the project compiles, the shader has no errors, and a fresh setup path produces the same sky.
 
-## 4. Verify in the target view
+## 5. Verify in the target view
 
 For Unity, follow [unity-verification.md](references/unity-verification.md). Everywhere else, use the engine's equivalent.
 

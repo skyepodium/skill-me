@@ -29,6 +29,16 @@ unity command --project-path <p> console --level error --tail 20
 - An unfocused editor stops advancing `Time.time` even in Play mode, and two captures come out identical. Run `editor_focus`, then confirm that `Time.time` advances between two `eval` calls.
 - Create a disabled temporary camera aimed at the sky, capture it twice with `capture_game_view --camera <name>` several seconds apart, measure the pixel difference, then destroy the camera.
 
+## URP and CLI notes (Unity 6000.6, CLI 1.0.0-beta.8)
+
+- **URP skybox shaders:** use `HLSLPROGRAM` with `Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl`. Read the sun from `_MainLightPosition`. A shader compiled before the URP package finished importing logs "Couldn't open include file"; reimport it and check `ShaderHasError`.
+- **Materials created at runtime:** `Shader.Find` on a URP shader can be stripped from builds. Copy a template material asset instead.
+- **Materials embedded in scenes:** a scene built by code stores its materials inside the scene file. After a pipeline switch, rebuild the scene with its builder rather than converting it by hand. Diff the hierarchy before and after.
+- **`package_add`:** takes `--identifier name@version --confirm true --wait true`. The call can report a network error while the domain reloads. Confirm with `package_status` and by resolving a type from the package.
+- **`eval` / `eval_file`:** the code runs as a method body, so `using` directives are not allowed. Fully qualify the types.
+- **Timeouts:** "Main thread operation timed out after 5000ms" can be reported while the work still completes. Re-read the resulting state before retrying.
+- **Waiting in Play mode:** loop `open -a <Unity.app>` (or `editor_focus`) and poll with `eval` until the cutscene or opening reports complete. Unfocused editors do not advance time.
+
 ## Evidence levels
 
 Script compile, shader compile, a numeric coverage sweep, Game-view captures and hands-on play are different checks. Report which ran. Angle captures made with reflection count as camera-state reproduction, not as manual WASD/drag testing.

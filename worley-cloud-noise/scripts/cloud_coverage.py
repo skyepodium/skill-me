@@ -3,8 +3,10 @@
 
 Replicates the reference shader in references/cloud-layer-shader.md on the CPU:
   planePoint = dir.xz / (dir.y + horizonBias) * planeScale
+  cluster    = shape(planePoint * clusterScale + offset)          (low-frequency coverage mask)
+  coverage'  = coverage + (cluster - 0.5) * 2 * coverageVariation
   density    = shape(planePoint) - (1 - detail(planePoint * detailTiling)) * erosion
-  body       = smoothstep(1 - coverage, 1 - coverage + softness, density) * fade(dir.y)
+  body       = smoothstep(1 - coverage', 1 - coverage' + softness, density) * fade(dir.y)
 Reads the baked noise PNG (R = shape, G = detail, Unity UV convention: v=0 is the bottom row).
 
 For each camera look-down angle and yaw it prints the share of above-horizon pixels
@@ -12,7 +14,7 @@ whose cloud alpha exceeds --alpha-threshold. Any 0% row with visible sky is a co
 
 Example:
   cloud_coverage.py MeadowCloudNoise.png --fov 58 --aspect 1.777 \
-      --look-down -2.5 3.5 9.7 19.8 26.2 --coverage 0.44 --plane-scale 0.15
+      --look-down -2.5 3.5 7.4 12.2 21.6
 Requires numpy and pillow (e.g. `uv run --with numpy --with pillow cloud_coverage.py ...`).
 """
 import argparse
@@ -20,6 +22,9 @@ import math
 
 import numpy as np
 from PIL import Image
+
+# Must match ClusterSampleOffset in the shader: decorrelates the cluster mask from the shape sample.
+CLUSTER_SAMPLE_OFFSET = np.array([0.37, 0.61])
 
 
 def load_noise(path):
@@ -58,7 +63,8 @@ def cloud_alpha(noise, directions, args, time_seconds):
     shape = sample_bilinear(noise, plane + wind, 0)
     detail = sample_bilinear(noise, plane * args.detail_tiling + wind * args.detail_wind, 1)
     density = shape - (1 - detail) * args.erosion
-    edge = 1 - args.coverage
+    cluster = sample_bilinear(noise, plane * args.cluster_scale + CLUSTER_SAMPLE_OFFSET + wind * args.cluster_scale, 0)
+    edge = 1 - (args.coverage + (cluster - 0.5) * 2 * args.coverage_variation)
     body = smoothstep(edge, edge + args.softness, density)
     fade = smoothstep(0.0, args.horizon_fade, height)
     return np.where(height > 0, body * args.opacity * fade, 0.0)
@@ -88,12 +94,14 @@ def main():
     parser.add_argument("--look-down", type=float, nargs="+", required=True, help="camera downward angles (deg)")
     parser.add_argument("--yaw-count", type=int, default=12)
     parser.add_argument("--time", type=float, default=0.0, help="shader time in seconds")
-    parser.add_argument("--coverage", type=float, default=0.44)
+    parser.add_argument("--coverage", type=float, default=0.49)
+    parser.add_argument("--cluster-scale", type=float, default=0.18)
+    parser.add_argument("--coverage-variation", type=float, default=0.25, help="0 disables the cluster mask")
     parser.add_argument("--softness", type=float, default=0.02)
-    parser.add_argument("--plane-scale", type=float, default=0.15)
-    parser.add_argument("--horizon-bias", type=float, default=0.1)
+    parser.add_argument("--plane-scale", type=float, default=0.36)
+    parser.add_argument("--horizon-bias", type=float, default=0.3)
     parser.add_argument("--detail-tiling", type=float, default=2.7)
-    parser.add_argument("--erosion", type=float, default=0.26)
+    parser.add_argument("--erosion", type=float, default=0.3)
     parser.add_argument("--horizon-fade", type=float, default=0.025)
     parser.add_argument("--opacity", type=float, default=0.95)
     parser.add_argument("--wind", type=float, nargs=2, default=(0.004, 0.0015))

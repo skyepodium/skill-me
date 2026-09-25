@@ -1,4 +1,6 @@
-# Observed case: QB-001 meadow (clouds invisible from the default view)
+# Observed cases: QB-001 meadow
+
+## Case 1: clouds invisible from the default view
 
 **Symptom:** the user reported that clouds disappear at some angles and look textureless.
 
@@ -20,3 +22,38 @@ Afterwards the coverage sweep measured 4–27% of visible sky at every pitch and
 1. A cloud band can exist in the shader and still never be on screen. Always compute the visible sky band before placing sky content.
 2. A chase camera that frames the character sees mostly 0–30° of elevation. Horizon-near sky is where the content must be dense.
 3. A band edge (where alpha barely starts) overstates visibility. Test actual coverage, not the band's geometric extent.
+
+## Case 2: "the sky is boring and looks like rain" next to a reference
+
+**Symptom:** the user compared the game with a bright Arceus-style tutorial frame. Their words: "our sky is dull, like it is about to rain."
+
+**Measured** with `sky_palette_compare.py`:
+
+| | Reference | Game before |
+|---|---|---|
+| Sky share of frame | 37% | 19% |
+| Sky saturation | 0.44 | 0.24 |
+| Cloud cover | 20% | 15% |
+| Cloud brightness | 0.99 | 0.93 |
+
+**Cause:**
+- The camera looked down about 20°, so the screen showed only 0–9° of elevation.
+- The gradient `smoothstep(-0.08, 0.85, dir.y)` mixes in at most 15% of the zenith colour over that range, so almost all the visible sky was the pale horizon colour.
+- The grey-blue cloud shade, covering most of each cloud, added the rainy tone.
+
+The cloud shapes were not the main problem.
+
+**Fix:**
+- Lower the camera pitch from 8° to −5° (about 7° look-down).
+- Set `_GradientHeight` to 0.42 and use a more saturated horizon/zenith palette.
+- Add a cluster mask so big, small and open areas mix.
+- Raise the horizon bias to 0.3 so horizon clouds stay round.
+- Shrink the shade and make it lighter.
+
+Result: sky share 40%, saturation 0.51, cloud cover about 18–20%, cloud brightness 0.97. No cloudless view appeared in six Game-view angles or in the numeric sweep.
+
+**Lessons:**
+1. Turn "dull" into numbers against the reference before touching the clouds.
+2. Sky share is a camera property. Fix the framing first and re-measure the visible band.
+3. The gradient has to finish inside the visible band.
+4. After the sky matched, the remaining gap to the reference was composition: flat ground, a horizontal river, no framing and a ruler-straight horizon. That belongs to terrain, not the sky.
