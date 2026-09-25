@@ -17,6 +17,8 @@
 5. Twinkles independent of view direction. A physically correct sun glint alone gave 0 % sparkle because the chase camera faces away from the sun.
 6. Bank foam plus foam boxes around the docks and the moving boat, fed per frame through a `MaterialPropertyBlock`.
 
+**Flow direction:** the first version hard-coded downstream as +Z. From the default camera (looking +X) that is screen-left, and the user saw the water run right to left. Making it `_FlowDirection = (0, -1)` fixed it. The fix was measured: +26 px to the right over one second of game time, against −34 px before.
+
 **Pitfall:** `point` is a reserved word in HLSL, so a function parameter named `point` failed to compile.
 
 **Result:**

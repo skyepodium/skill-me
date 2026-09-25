@@ -45,6 +45,7 @@ Start from [water-shader.md](references/water-shader.md), and from [riverbed-and
 - Copy the sky's horizon and zenith colours into the water material from the sky material, so the two always match (single source).
 - Keep channel width, water height and foam-box sizes in one layout constant shared by the terrain, water and gameplay code.
 - Feed moving-object foam (boats, platforms) from script with explicit references, not lookups by name.
+- Set the flow direction (`_FlowDirection`, world xz) from the default camera's screen axes so the water runs the way the player expects on screen.
 
 **Done when:**
 - The shader compiles with no errors (check `ShaderUtil.ShaderHasError` in Unity).
@@ -68,6 +69,11 @@ Compare like with like: a narrow river's body against the reference's near water
 For Unity CLI capture tips, see [game-skybox/references/unity-verification.md](../game-skybox/references/unity-verification.md). Remember that an unfocused editor stops time, so ripples and flow will not move.
 
 - Capture the three views after the final pass. Also capture a moving object (boat) to see its foam follow.
+- Verify the on-screen flow direction by measurement:
+  1. Make the water opaque with maximum reflection and no twinkles or foam; a translucent surface lets the static bed dominate.
+  2. Capture the real game view twice, at least 1 s of game time apart. Manual camera renders may not advance the shader time.
+  3. Cross-correlate a water strip horizontally with [scripts/flow_direction.py](scripts/flow_direction.py).
+  4. Restore the material values afterwards.
 - Record draw calls, SetPass calls and triangles before and after.
 - Record which checks did not run: device frame time, hands-on play.
 

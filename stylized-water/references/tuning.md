@@ -12,6 +12,7 @@ Tune in the game view at the views players actually use: the default chase view,
 | `_ReflectionTint`, `_ReflectionTintBlend` | Brightness/blueness of the reflection | Far water reads cyan-grey (horizon haze) | Far water glows white |
 | `_RippleScaleA/B`, `_RippleStrength` | Ripple size and bumpiness | Surface looks flat | Surface looks noisy or boiling |
 | `_FlowSpeed` | Downstream speed (m/s) | Water looks still | Flow distracts |
+| `_FlowDirection` | Downstream direction in world xz | — | — (set from the default camera's screen-right; see water-shader.md) |
 | `_GlintPower`, `_GlintIntensity` | Sun highlight (only when facing the sun) | No sparkle toward the sun | Harsh white patches |
 | `_SparkleScale`, `_SparkleThreshold`, `_SparkleIntensity` | View-independent twinkles | Water looks dull from views away from the sun | More than ~2 % of water pixels twinkle |
 | `_BankFoamWidth`, `_ObjectFoamWidth`, `_FoamNoiseScale` | Foam lines | Banks or objects float without contact | Foam reads as a continuous painted white line |
@@ -25,6 +26,7 @@ Tune in the game view at the views players actually use: the default chase view,
 | Far water too cyan | Reflection samples the horizon colour; bias toward zenith and blend a highlight tint |
 | Foam looks like a drawn line | Narrow the width and raise the noise threshold so it breaks up |
 | Shallows invisible | Riverbed not painted, or `_ShallowAlpha` too high |
+| Water flows the wrong way on screen | `_FlowDirection` against the default camera's `transform.right`; verify by measurement (SKILL.md step 5) |
 
 ## Observed passes (QB-001 river, 3 m wide, chase camera)
 

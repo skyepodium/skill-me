@@ -1,6 +1,6 @@
 # Stylized river shader (Unity URP reference, mobile)
 
-A translucent water surface that needs **no depth texture and no opaque texture**. Depth comes from the known channel geometry: here, a straight river along world Z centred on x = 0, so `depth = f(|x|)`.
+A translucent water surface that flows along a configurable world direction (`_FlowDirection`, world xz) and needs **no depth texture and no opaque texture**. Depth comes from the known channel geometry: here, a straight river along world Z centred on x = 0, so `depth = f(|x|)`.
 
 It combines:
 - emerald shallows → clear blue body
@@ -42,6 +42,7 @@ Shader "Water/StylizedRiver"
         _RippleScaleB ("Ripple Scale B (tiles per m)", Float) = 0.9
         _RippleStrength ("Ripple Strength", Range(0, 1)) = 0.45
         _FlowSpeed ("Flow Speed (m/s)", Float) = 0.35
+        _FlowDirection ("Flow Direction (world xz)", Vector) = (0, -1, 0, 0)
         _GlintPower ("Glint Sharpness", Float) = 250
         _GlintIntensity ("Glint Intensity", Float) = 2.5
         _SparkleScale ("Sparkle Scale (per m)", Float) = 7
@@ -91,6 +92,7 @@ Shader "Water/StylizedRiver"
             float _RippleScaleB;
             half _RippleStrength;
             float _FlowSpeed;
+            float4 _FlowDirection;
             float _GlintPower;
             half _GlintIntensity;
             float _SparkleScale;
@@ -131,9 +133,11 @@ Shader "Water/StylizedRiver"
                 float2 xz = input.world.xz;
                 float time = _Time.y;
 
-                // Two ripple layers flowing downstream (+Z) at different speeds and scales.
-                float2 flowA = float2(0.0, time * _FlowSpeed);
-                float2 flowB = float2(time * _FlowSpeed * 0.15, time * _FlowSpeed * 0.6);
+                // Two ripple layers flowing downstream at different speeds and scales, the second slightly cross-current.
+                float2 downstream = normalize(_FlowDirection.xy);
+                float2 across = float2(downstream.y, -downstream.x);
+                float2 flowA = downstream * (time * _FlowSpeed);
+                float2 flowB = (downstream * 0.6 + across * 0.15) * (time * _FlowSpeed);
                 half3 rippleA = UnpackNormal(SAMPLE_TEXTURE2D(_RippleNormal, sampler_RippleNormal, (xz - flowA) * _RippleScaleA));
                 half3 rippleB = UnpackNormal(SAMPLE_TEXTURE2D(_RippleNormal, sampler_RippleNormal, (xz - flowB) * _RippleScaleB + 0.37));
                 half2 tilt = (rippleA.xy + rippleB.xy) * _RippleStrength;
@@ -165,7 +169,7 @@ Shader "Water/StylizedRiver"
                 alpha = saturate(alpha + glint + sparkle);
 
                 // Foam: a broken, flowing line along each bank and around docks and the boat.
-                half foamNoise = MeadowFbm(float2(xz.x * _FoamNoiseScale, (xz.y - time * _FlowSpeed * 0.8) * _FoamNoiseScale));
+                half foamNoise = MeadowFbm((xz - downstream * (time * _FlowSpeed * 0.8)) * _FoamNoiseScale);
                 float bankDistance = _RiverHalfWidth - abs(xz.x);
                 float objectDistance = min(BoxDistance(xz, _FoamBoxLeftDock), min(BoxDistance(xz, _FoamBoxRightDock), BoxDistance(xz, _FoamBoxBoat)));
                 half bankFoam = 1.0 - smoothstep(_BankFoamWidth * 0.3, _BankFoamWidth, bankDistance + (foamNoise - 0.5) * _BankFoamWidth);
@@ -207,6 +211,10 @@ float MeadowFbm(float2 p)
 ## Script side: foam around moving objects
 
 `RiverWater` sets three `float4` boxes (centre x, centre z, half x, half z) with a `MaterialPropertyBlock` in `LateUpdate`: two static docks and the boat. Pass the tracked transforms in explicitly (`TrackBoat(boat)`) instead of looking them up by name. For more objects, switch to a small array (`SetVectorArray`) with a fixed maximum.
+
+## Flow direction
+
+`_FlowDirection` is the downstream direction in world xz. Both ripple layers, the twinkles and the foam noise advect along it; the second ripple layer drifts slightly across the current. Choose it from the **player's default view**, not the world axes: find which world direction is screen-right for the default camera (`camera.transform.right`) and set downstream accordingly. In QB-001 the default camera looks +X, so screen-right is world −Z and `(0, -1)` makes the water run left to right.
 
 ## Porting notes
 
