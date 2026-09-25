@@ -1,0 +1,6 @@
+interface:
+  display_name: "Game Skybox"
+  short_description: "카메라가 실제로 보는 하늘 범위부터 스카이박스를 설계하고 검증합니다"
+  default_prompt: "$game-skybox로 이 게임 카메라의 보이는 하늘 범위를 계산하고, 스카이박스가 모든 시점에서 제대로 보이는지 분석·수정해줘."
+policy:
+  allow_implicit_invocation: true
