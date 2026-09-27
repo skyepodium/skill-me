@@ -1,6 +1,6 @@
 ---
 name: outfit-retargeting
-description: Refit skinned clothing, armour and weapons made for one rigged humanoid character onto a different humanoid body (other proportions, pose, skeleton names) in Unity - pose matching, per-segment proportion transfer, weight remapping, push-out, hiding covered skin, weapon sockets - and verify it with a pilot set, matched captures and motion poses.
+description: Refit skinned clothing, armour, weapons, helmets/hats and hair made for one rigged humanoid character onto a different humanoid body (other proportions, pose, skeleton names) in Unity - pose matching, per-segment proportion transfer, weight remapping, push-out, hiding covered skin, weapon sockets - and verify it with a pilot set, matched captures and motion poses.
 ---
 
 # Outfit Retargeting
@@ -27,9 +27,12 @@ State the criteria before the first run and report against them: no visible poke
 4. **Skin submeshes:** drop the source pieces' own skin; the target body shows instead.
 5. **Push-out:** move vertices within a few millimetres of the target body outward, smoothing the move along the piece.
 6. **Hide covered skin (decisive):** per outfit, copy the target body without the triangles the outfit covers - a triangle is covered when rays from its corners and centre along **both** normal directions meet the outfit within a few centimetres - and keep the original body off. Push-out alone leaves curved skin between large cloth triangles and fails in motion.
-7. **Weapons:** read the source socket (constraint source, offsets), keep the weapon's world rotation and offset from the hand in the matched pose, and parent it to the target hand.
+7. **Weapons:** read the source socket (constraint source, offsets; pick the hand source when a constraint also has a carry source), keep the weapon's world rotation and offset from the hand in the matched pose, and parent it to the target hand. Bake skinned weapons (bows) to static meshes.
+8. **End bones** (head, hands, finger tips, toes) have no direction: carry them without rotation. Using each rig's local up axis turned helmets around the head.
+9. **Headwear:** keep the source size, align by a clear landmark, and fit it over every target hair: a uniform scale about the head centre from the hair's outer radius (a high percentile), applied through one pivot bone under the head that the helmets are skinned to, not one object per helmet and hair.
+10. **Hair:** carry it with the head and push it out of the head and face; hair bones follow the head by a constraint the editor does not evaluate, so move the hair from the rest head to the matched head. Sway needs the cloth setup redone.
 
-Save derived meshes by deleting and recreating the asset: `EditorUtility.CopySerialized` into an existing mesh dropped skin weights. Keep derived meshes of purchased assets out of git and regenerable by a menu command.
+In editor scripts use `TryGetComponent`: a missing component comes back as a fake null that passes `is`. Save derived meshes by deleting and recreating the asset: `EditorUtility.CopySerialized` into an existing mesh dropped skin weights. Keep derived meshes of purchased assets out of git and regenerable by a menu command.
 
 ## 4. Verify
 
@@ -40,6 +43,6 @@ Save derived meshes by deleting and recreating the asset: `EditorUtility.CopySer
 - After any tool that saves the scene, check the character script and Animator are still enabled.
 - Report long skirts/capes that follow the legs as a physics task, separately from fitting.
 
-Isolate a visual defect by turning one thing off (hide the body, hide one piece) before theorizing. Scripts that disable components to hold a pose must refuse to run outside Play mode.
+Judge placement against the source side by side before "fixing" it. Isolate a visual defect by turning one thing off (hide the body, hide one piece) before theorizing. Scripts that disable components to hold a pose must refuse to run outside Play mode.
 
 Keep project constants and scripts in the project; promote only verified rules here (source `dev/skill-me/outfit-retargeting`, linked into `~/.claude/skills` and `~/.codex/skills`).
