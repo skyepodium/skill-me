@@ -1,0 +1,3 @@
+interface:
+  display_name: "Outfit Retargeting"
+  short_description: "Refit clothes and weapons from one rigged humanoid to another body"

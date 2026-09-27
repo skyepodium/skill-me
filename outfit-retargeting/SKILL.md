@@ -1,0 +1,45 @@
+---
+name: outfit-retargeting
+description: Refit skinned clothing, armour and weapons made for one rigged humanoid character onto a different humanoid body (other proportions, pose, skeleton names) in Unity - pose matching, per-segment proportion transfer, weight remapping, push-out, hiding covered skin, weapon sockets - and verify it with a pilot set, matched captures and motion poses.
+---
+
+# Outfit Retargeting
+
+Developed from fitting the P09 female armour (12 sets, sword, shield) onto the CombatGirls body in Unity. The method is reusable; thresholds and bone names are asset-specific. Read [observed failures](references/observed-failures.md) before choosing a fix.
+
+## Analyse with leader-thinking-trainer
+
+When the user asks for analysis or a report, load `leader-thinking-trainer` first: conclusion, facts, what was and was not checked, eliminated hypotheses, next check. Mark claims as fact, inference or unverified.
+
+## 1. Decide feasibility from the skeletons and bodies, not the clothes
+
+Measure both characters at rest: humanoid bone positions (hips, neck, head, shoulders, hands, feet), rest pose (T vs A), bone names and counts, whether the body is one mesh or split per region, which submeshes of each outfit piece are skin, and which bones the piece is weighted to. Same-sex humanoids are usually feasible; the differences that matter are pose, segment lengths (e.g. torso +18 %, arms +13 %) and how each spine is split. A male outfit on a female-only body is not a fitting task.
+
+## 2. Pilot one set with written acceptance criteria
+
+State the criteria before the first run and report against them: no visible poke-through in four views; no creases at shoulders, elbows and hips in idle, run and attack; design matches the source side by side. Turn stages on one at a time and compare each from the same cameras. Only then run every set with the same code.
+
+## 3. Transfer
+
+1. **Pose:** apply the target's rest pose to the source through the humanoid rig (`HumanPoseHandler.GetHumanPose` on the target, `SetHumanPose` on the source) and bake the pieces (`BakeMesh`) in that pose.
+2. **Proportions:** carry every vertex by the bone segments it is weighted to - scale the offset along the segment by the length ratio, keep the offset across it, rotate the segment axis onto the target's. Treat the spine as one hips-to-neck segment when the two spines are split differently; give fingers their own segments; replace a bone missing on either side by its humanoid parent.
+3. **Weights:** keep the source's skin weights and map each bone to the target bone of its nearest humanoid ancestor. Do not re-transfer weights from a different body surface.
+4. **Skin submeshes:** drop the source pieces' own skin; the target body shows instead.
+5. **Push-out:** move vertices within a few millimetres of the target body outward, smoothing the move along the piece.
+6. **Hide covered skin (decisive):** per outfit, copy the target body without the triangles the outfit covers - a triangle is covered when rays from its corners and centre along **both** normal directions meet the outfit within a few centimetres - and keep the original body off. Push-out alone leaves curved skin between large cloth triangles and fails in motion.
+7. **Weapons:** read the source socket (constraint source, offsets), keep the weapon's world rotation and offset from the hand in the matched pose, and parent it to the target hand.
+
+Save derived meshes by deleting and recreating the asset: `EditorUtility.CopySerialized` into an existing mesh dropped skin weights. Keep derived meshes of purchased assets out of git and regenerable by a menu command.
+
+## 4. Verify
+
+- A sheet per set: idle front/side/back plus an attack pose; the source side by side for design.
+- Count distinct weighted bones after saving; one bone means lost weights.
+- Close-ups of chest, shoulders, hands; motion poses at several normalized times.
+- The switch UI shows exactly one outfit and restores the original.
+- After any tool that saves the scene, check the character script and Animator are still enabled.
+- Report long skirts/capes that follow the legs as a physics task, separately from fitting.
+
+Isolate a visual defect by turning one thing off (hide the body, hide one piece) before theorizing. Scripts that disable components to hold a pose must refuse to run outside Play mode.
+
+Keep project constants and scripts in the project; promote only verified rules here (source `dev/skill-me/outfit-retargeting`, linked into `~/.claude/skills` and `~/.codex/skills`).
