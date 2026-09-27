@@ -5,7 +5,16 @@ description: Fit generated or outsourced 3D hair (bobs, layered or braided style
 
 # Hair Fitting
 
-Developed from a CombatGirls Face_04 + Tripo Short1/2/4 and braid pilot. The workflow is reusable; its geometry parameters are not a general fitting recipe. Read [observed failures](references/observed-failures.md) when selecting a correction method.
+Developed from a CombatGirls Face_04 + Tripo Short1/2/4 and braid pilot. The workflow is reusable; its geometry parameters are not a general fitting recipe. Read [observed failures](references/observed-failures.md) when selecting a correction method, and [the braid retrospective](references/retrospective-braid.md) before starting a new style: it records why the last fit needed many trials and the shorter path.
+
+## Working order (quality up, time down)
+
+1. **Acceptance criteria first.** State them before the first run and report against them. Examples: no visible crossings in five views; face gap ≥ 4 mm; height per region within about ±5 mm of the reference hair; no flaps, horns or streaks; triangle budget.
+2. **One diagnostic pass before any correction** (see "Measure before correcting"). Fix what it flags upstream first. A downstream patch (clearance pushes, fades) cannot remove an upstream placement error.
+3. **Add one stage at a time.** Accept placement only when the largest lift is small (about 3 cm here), then add the next stage and compare its stage strip. Never change two things between compared runs. A pipeline validated on one hair type is re-checked stage by stage on another; it is not run whole.
+4. **Validate every experiment:** the intended change happened (pixel difference, the selected asset, a moved-vertex count), and nothing else moved (for example the root cap). Judge a stage only after the stage meant to fix its side effect has run.
+5. **Blender stage strips for decisions, the target viewer for acceptance.** One Unity pass at the end: five views plus close-ups.
+6. **Report early.** Share the diagnostic and the plan before long tuning; the user sees defects that metrics miss.
 
 ## Analyse with leader-thinking-trainer first
 
