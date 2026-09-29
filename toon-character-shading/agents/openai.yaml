@@ -1,0 +1,6 @@
+interface:
+  display_name: "Toon Character Shading"
+  short_description: "Unity URP 캐릭터를 번들거림 없는 평평한 애니(툰) 그림체로 바꾸고, 얼굴·몸 피부 색과 툰 셰이더 함정을 수치로 검증합니다"
+  default_prompt: "$toon-character-shading으로 캐릭터가 왜 반짝이는지 재질 값부터 확인하고, 툰 셰이더를 적용한 뒤 얼굴·몸 피부 색을 같은 시점에서 수치로 비교해줘."
+policy:
+  allow_implicit_invocation: true
