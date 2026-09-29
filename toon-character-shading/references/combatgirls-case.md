@@ -1,4 +1,4 @@
-# Case: CombatGirls on Unity-Chan Toon Shader SDF (Unity 6.6, URP 17.6), 2026-09-28/29
+# Case: CombatGirls on Unity-Chan Toon Shader SDF (Unity 6.6, URP 17.6), 2026-09-28/30
 
 Goal: flat Fire Emblem: Three Houses look for CombatGirls characters in a Unity URP mobile project.
 
@@ -28,8 +28,15 @@ Goal: flat Fire Emblem: Three Houses look for CombatGirls characters in a Unity 
 
 12. **Shared for backgrounds (user):** `ToonStyle.Apply(material, Skin | Character | Environment)` became the one source; `ToonMaterialConverter` converts selected objects or builder output (URP Lit/Standard/Unlit with texture), `ToonStyle.Create` makes runtime materials from `Resources/Toon/ToonTemplate.mat`. Our vertex-colour shaders are skipped. Character materials were byte-identical before and after the refactor.
 
+13. **P09 hair and outfits glossy (user):** the second pack's parts were lilToon with reflection (smoothness 0.4–0.5, metallic 0.5–0.9), matcap and rim. Toon copies in a gitignored folder; hair colour options and per-style exceptions converted too. Plain conversion made chainmail and plates pale grey-beige: metal areas of the base map darkened by the metallic map (linear light × lerp(1, 0.25, metallic); 0.4 was still too light). Cutout set: toon clipping from base alpha, level 0.5 − cutoff.
+14. **"Outfits still realistic 3D" (user):** the untextured fitted bob and the pack hair had identical toon values; the difference was the texture. Pack hair and cloth textures paint shine, folds and gradients. First flattening with k-means gave camouflage bands; a floating-range flood fill gave flat regions with lines. Outfits then also took a hard shade step (feather 0.295 → 0.04); face untouched.
+15. **Pack hair:** `--drop-highlights` removed the angel-ring flecks; the pack hair kept its own texture until a colour was chosen, so the flat colour is applied at start. P09 hair textures flattened to nearly one colour, like the fitted hair.
+16. **Jungle pack (Pure Nature 2):** flattening leaves changed almost nothing: their look came from the vendor shader's translucency, soft light and colour noise. A toon foliage shader keeping the vendor conventions (vertex colour G = height for sway, R = flutter; grass flutter by R × UV v; edge-on dither) fixed it. Vendor tints at full brightness went neon; brightness 0.85, saturation ≤ 0.55. Rocks: one-colour flattening read as a lump; the normal map on the toon shader barely showed; three lightness bands kept the cracks.
+17. **Draw calls (jungle):** 650 small plants as GPU-instanced batches per mesh/material/20 m cell: 375 → 123 at the start view. Culling against `Camera.main` in script dropped plants from a capture at another aspect; leave culling to the per-camera bounds of the instanced call.
+
 ## What would have saved time
 
 - Listing shader + effect values per renderer before the first change (step 8 was a value question, not an application question).
 - Applying one skin rule to face and body at once (steps 9–10).
 - Checking lossy scale, light intensity and bone axes against the vendor's assumptions right after the import (steps 5–7).
+- Asking "where does the light come from" (values, texture or shader) before any fix: steps 14 and 16 were texture and shader questions.

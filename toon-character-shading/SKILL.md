@@ -1,13 +1,13 @@
 ---
 name: toon-character-shading
-description: Move rigged game characters to a flat anime/cel look (Fire Emblem, Genshin-like) in Unity URP, or fix one that looks glossy, blotchy or mismatched. Use when characters "shine", when adopting a vendor toon shader (Unity-Chan Toon Shader/UTS, lilToon) on existing materials, when a toon face shows a two-tone split or white blow-out, when face and body skin colours differ, when outlines turn meshes black, or when adding skin tone / body shade options.
+description: Move rigged game characters and the scenery around them to a flat anime/cel look (Fire Emblem, Genshin-like) in Unity URP, or fix one that looks glossy, blotchy, "realistic 3D" or mismatched. Use when characters "shine", when outfits or hair still read as realistic under a toon shader (light painted into textures), when adopting a vendor toon shader (Unity-Chan Toon Shader/UTS, lilToon) on existing materials, when a toon face shows a two-tone split or white blow-out, when face and body skin colours differ, when outlines turn meshes black, when purchased foliage/rocks clash with toon characters, or when adding skin tone / body shade options.
 ---
 
 # Toon Character Shading
 
-A flat anime look is mostly **material values and scene conditions**, not the choice of shader. Before changing anything, prove whether the problem is "not applied" or "applied with the wrong values".
+A flat anime look is mostly **material values, texture content and scene conditions**, not the choice of shader. The rule behind a good result: **light is drawn by the shader only.** A surface with no texture (one colour plus a shade colour) or a flat texture with line art reads as anime; a texture with painted light (shine bands, fold shading, gradients, photo detail) gets the toon steps on top and reads as realistic 3D. Before changing anything, prove whether the problem is "not applied", "applied with the wrong values", "light painted in the texture" or "light from the shader".
 
-Case record (CombatGirls + Unity-Chan Toon Shader SDF, URP 17.6): [references/combatgirls-case.md](references/combatgirls-case.md). The numbers there are that asset's, not defaults.
+Case record (CombatGirls + Unity-Chan Toon Shader SDF, URP 17.6; P09 lilToon parts; a vendor jungle pack): [references/combatgirls-case.md](references/combatgirls-case.md). The numbers there are those assets', not defaults.
 
 ## 1. Inventory what is actually rendered
 
@@ -44,20 +44,46 @@ A PBR material converted from another pipeline often keeps a default smoothness 
 | Tint or recolour ignored in shade | shade colours are separate from the base colour | multiply the tint into the shade colours too |
 | Tint wipes a material's own colour | a property block value replaces the material value | block value = material value × tint |
 
-Painted highlights in textures cannot be removed by shader values; say so.
+Painted light in textures cannot be removed by shader values: flatten the texture (section 6).
 
-## 5. Verify with numbers and matched views
+## 5. Find where the light comes from
+
+Put a part that looks right next to one that does not (e.g. an untextured fitted hair against a pack hair) and dump both materials' values side by side: print only the properties that differ, plus each material's textures. If the toon values match and only the texture differs, open the texture: painted angel rings, highlight strokes, metal reflections, fold shading and gradients are the cause. For foliage and rocks from environment packs, also check whether their own shader adds light (translucency, soft wrap lighting, colour noise, reflections): then flattening the texture changes little.
+
+## 6. Flatten painted light out of textures
+
+[scripts/flatten_albedo.py](scripts/flatten_albedo.py) (numpy, OpenCV; Pillow for TGA) keeps colour regions and line art and removes painted light:
+- Line art: pixels much darker than their neighbourhood median keep their colour.
+- Regions: mean-shift smoothing, then a floating-range flood fill (small neighbour steps join, sharp steps stop), so a painted gradient stays one region. Clustering colours (k-means) cut gradients into bands and read as camouflage.
+- Fill: each region takes the lit side of its pixels (lightness 65th percentile, median hue); the shader draws the shade.
+- `--drop-highlights` (hair): small regions clearly brighter than their ring are painted shine and take the ring's colour; strand lines stay.
+- `--bands N` (rocks, bark): one colour per region loses cracks and facets and reads as a lump; bands keep them as 2–4 flat darker steps. A normal map on the toon shader did not help: most faces sat on the lit side of the step.
+
+Wire the results in through the owner that already swaps textures (colour choices, property blocks), keep them in a gitignored generated folder when derived from purchased assets, and reuse a result while it is newer than its source and the script. After flattening, give outfits a hard shade step (feather about 0.04) on their renderers only; leave faces and skin as they were. A part that keeps its own texture until a colour is chosen (a pack hair) must apply the flat colour at start.
+
+## 7. Other packs' shaders on the same character
+
+Parts from another pack (e.g. lilToon hair and armour with reflection, matcap and rim) get toon copies of their materials, not edits of the vendor files; convert every place a material is chosen from (colour options, per-style exceptions, preview renderers), and let a rerun find the source again from the copy's name. Metal that the vendor shader darkened through metallic × reflection turns pale on a toon shader: darken the base map where the metallic map says metal before converting.
+
+## 8. Scenery that matches the characters
+
+- Floors: a world-noise flat-colour terrain shader, no photo layers.
+- Foliage: a small toon foliage shader of your own (two shade steps, cutout, two-sided) that keeps the vendor meshes' conventions: which vertex colour channels drive sway and flutter, UV-based grass wind, edge-on card fade, and the vendor's wind globals. Switch trunks and leaves together so they keep swaying as one tree.
+- Vendor tints were chosen for the vendor's lighting; on two steps they turn dark and olive. Keep the hue, set a brightness, cap saturation (full brightness went neon).
+- Many small plants: draw them with GPU instancing in cell batches; the SRP Batcher otherwise draws every copy.
+
+## 9. Verify with numbers and matched views
 
 - Same camera, pose and light before/after. Include the user's reported view.
 - Sample pixels on face and body (cheek, thigh) with [scripts/sample_pixels.py](scripts/sample_pixels.py); compare RGB, saturation and value. Skin should match within a few points.
 - Check every scene and UI that shows the character (gameplay, customizer thumbnails), and re-bake derived assets.
 - Mobile cost: outlines add a pass per material; measure draw calls on the target device before calling it done. Mark device checks as unverified until run.
 
-## 6. Make the look one module, then reuse it for new assets
+## 10. Make the look one module, then reuse it for new assets
 
 Put the look in one function that takes the surface kind (skin, character, environment) and sets every toon value, and route everything through it: the character conversion, a converter for assets added later (textured sources → toon materials keeping texture and colour, saved next to each other and updated in place, outline width divided by the renderer's scale), and runtime creation from a toon template asset kept in `Resources` (so the shader ships in builds, with a lit fallback when the vendor shader is missing). Environment surfaces usually drop the outline. Skip sources whose colour lives in vertex colours if the toon shader ignores them, and say so. After refactoring, diff the character materials before and after: they must not change.
 
-## 7. Options players or designers can choose
+## 11. Options players or designers can choose
 
 Skin tone and body shade are cheap on a toon material: tone multiplies base and shade colours on face and body together; a body shade slider moves the base step and blends the shade colour from white to a light shade. Keep the face out of shade if its split read as a stain.
 
