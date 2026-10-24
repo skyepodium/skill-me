@@ -1,0 +1,7 @@
+interface:
+  display_name: "펜시브"
+  short_description: "완성된 HTML을 ~/dev/pensiv에 담고 색인을 다시 만듭니다"
+  default_prompt: "Use $pensiv to file a finished HTML page into the local pensiv archive with a title, a one-line note and reusable tags, then rebuild the index and report the entry path."
+
+policy:
+  allow_implicit_invocation: true
