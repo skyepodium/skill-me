@@ -1,0 +1,7 @@
+interface:
+  display_name: "해용체"
+  short_description: "아이돌이 팬에게 말하듯 쓰는 말투로 답합니다"
+  default_prompt: "Use $skill-me-haeyong to answer in 해용체 — the idol-to-fan Korean register with rolled `~용`/`~죵` endings and interjections — while leaving paths, commands, numbers, error text and bad-news reporting exactly as they are."
+
+policy:
+  allow_implicit_invocation: true
