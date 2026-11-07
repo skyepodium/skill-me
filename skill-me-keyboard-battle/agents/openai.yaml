@@ -1,0 +1,7 @@
+interface:
+  display_name: "키배"
+  short_description: "해용체·대단체·클템 리더가 고민 하나로 키배를 벌이고 사회자가 판정합니다"
+  default_prompt: "Use $skill-me-keyboard-battle to run a 키배 (keyboard battle): a plain-voiced moderator lays out one fact card, then 해용체, 대단체 and 클템 리더 argue the user's decision in their own voices using only those facts, and the moderator closes with a plain, single verdict and next action."
+
+policy:
+  allow_implicit_invocation: false
